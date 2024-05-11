@@ -131,13 +131,12 @@ let client = new m2m.Client()
 
 m2m.connect()
 .then(async (result) => {
-	console.log('connection:', result)
+  console.log('connection:', result)
   client.subscribe({id:100, topic:'server-to-server'}, async (data) => { 
     console.log('server-to-server', data)
-		let result = await client.read({id:100, topic:'random-number'})
-	  console.log('random-number', result)    
+    let result = await client.read({id:100, topic:'random-number'})
+    console.log('random-number', result)    
   }) 
-
 })
 .catch(console.log)
 ```
@@ -163,7 +162,6 @@ server-to-server {
   body: { id: 300, state: 'true' }
 }
 random-number { id: 200, topic: 'random-number', value: 113 }
-
 ```
 
 
