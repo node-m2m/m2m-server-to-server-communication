@@ -46,17 +46,17 @@ $ node app.js
 ```js
 const m2m = require('m2m');
 
-let s1 = new m2m.Server(300);
+let s2 = new m2m.Server(300);
 
 m2m.connect()
 .then(console.log)
 .then(() => {
 
-  s1.dataSource('random-number', (ws) => {
+  s2.dataSource('random-number', (ws) => {
     let rn = Math.floor(Math.random() * 300);
     ws.send({id:ws.id, topic:ws.topic, interval:ws.interval, value:rn});
   })
-  s1.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
+  s2.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
     res.json({id:res.id, path:res.path, query:req.query, params:req.params, body:req.body});
   });
 
@@ -77,7 +77,7 @@ $ node app.js
 ```js
 const m2m = require('m2m');
 
-let server = new m2m.Server(100);
+let s3 = new m2m.Server(100);
 
 m2m.connect()
 .then(console.log)
@@ -85,9 +85,9 @@ m2m.connect()
 
   let s = 0
 
-  const client = new server.Client();
+  const client = new s3.Client();
 
-  server.publish('server-to-server', async (ws) => {
+  s3.publish('server-to-server', async (ws) => {
     let d = null
     if(s == 0){
       s = 1
@@ -100,7 +100,7 @@ m2m.connect()
     ws.send(d)
   })
 
-  server.dataSource('random-number',async (ws) => {
+  s3.dataSource('random-number',async (ws) => {
     if(s == 0){
       d = await client.read(200, 'random-number')
     }
