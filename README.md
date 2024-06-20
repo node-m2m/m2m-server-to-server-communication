@@ -1,5 +1,5 @@
 ## M2M Server-To-Server-Communication
-[](assets/m2m-pub-sub.png)
+![](assets/m2m-server-to-server.svg)
 [](https://raw.githubusercontent.com/EdoLabs/src2/master/quicktour.svg?sanitize=true)
 
 #### Install *m2m* on your endpoints.
@@ -130,7 +130,7 @@ const m2m = require('m2m')
 let client = new m2m.Client()
 
 m2m.connect()
-.then(async (result) => {
+.then((result) => {
   console.log('connection:', result)
   client.subscribe({id:100, topic:'server-to-server'}, async (data) => { 
     console.log('server-to-server', data)
