@@ -8,55 +8,25 @@
 $ npm install m2m
 ```
 
-### Server 1
+### Server 2
 
 #### 1. Save the code below as *app.js* in your project directory.
 
 ```js
 const m2m = require('m2m');
 
-let s1 = new m2m.Server(200);
+let s = new m2m.Server(200);
 
 m2m.connect()
 .then(console.log)
 .then(() => {
   
-  s1.dataSource('random-number', (ws) => {
+  s.dataSource('random-number', (ws) => {
     let rn = Math.floor(Math.random() * 300);
     ws.send({id:ws.id, topic:ws.topic, interval:ws.interval, value:rn});
   })
 
-  s1.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
-    res.json({id:res.id, path:res.path, query:req.query, params:req.params, body:req.body});
-  });
-
-})
-.catch(console.log)
-```
-
-#### 2. Start server 1 application.
-
-```js
-$ node app.js
-```
-### Server 2
-
-#### 1. Save the code below as *app.js* in your project directory. <br> The code is similar with server 1 but using using a server id of 300. 
-
-```js
-const m2m = require('m2m');
-
-let s2 = new m2m.Server(300);
-
-m2m.connect()
-.then(console.log)
-.then(() => {
-
-  s2.dataSource('random-number', (ws) => {
-    let rn = Math.floor(Math.random() * 300);
-    ws.send({id:ws.id, topic:ws.topic, interval:ws.interval, value:rn});
-  })
-  s2.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
+  s.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
     res.json({id:res.id, path:res.path, query:req.query, params:req.params, body:req.body});
   });
 
@@ -69,15 +39,45 @@ m2m.connect()
 ```js
 $ node app.js
 ```
+### Server 3
 
-### Server 3 
+#### 1. Save the code below as *app.js* in your project directory. <br> The code is similar with server 2 except with the server id. 
+
+```js
+const m2m = require('m2m');
+
+let s = new m2m.Server(300);
+
+m2m.connect()
+.then(console.log)
+.then(() => {
+
+  s.dataSource('random-number', (ws) => {
+    let rn = Math.floor(Math.random() * 300);
+    ws.send({id:ws.id, topic:ws.topic, interval:ws.interval, value:rn});
+  })
+  s.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
+    res.json({id:res.id, path:res.path, query:req.query, params:req.params, body:req.body});
+  });
+
+})
+.catch(console.log)
+```
+
+#### 2. Start server 3 application.
+
+```js
+$ node app.js
+```
+
+### Server 1 
 
 #### 1. Save the code below as *app.js* in your project directory. <br> This is the central server exposed to remote clients. 
 
 ```js
 const m2m = require('m2m');
 
-let s3 = new m2m.Server(100);
+let s = new m2m.Server(100);
 
 m2m.connect()
 .then(console.log)
@@ -85,9 +85,9 @@ m2m.connect()
 
   let s = 0
 
-  const client = new s3.Client();
+  const client = new s.Client();
 
-  s3.publish('server-to-server', async (ws) => {
+  s.publish('server-to-server', async (ws) => {
     let d = null
     if(s == 0){
       s = 1
@@ -100,7 +100,7 @@ m2m.connect()
     ws.send(d)
   })
 
-  s3.dataSource('random-number',async (ws) => {
+  s.dataSource('random-number',async (ws) => {
     if(s == 0){
       d = await client.read(200, 'random-number')
     }
