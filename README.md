@@ -2,6 +2,12 @@
 ![](assets/m2m-server-to-server.svg)
 [](https://raw.githubusercontent.com/EdoLabs/src2/master/quicktour.svg?sanitize=true)
 
+In this demo, a client will attempt to access resources from server1. However, the resources from server1 is actually located in other remote servers such as server2 and server3.
+<br>
+
+Everytime the client or any client tries to access the server1 resources, it will actually communicate with the other two servers using an m2m server-to-server communication method.    
+
+
 #### Install *m2m* on your endpoints.
 
 ```js
@@ -15,23 +21,23 @@ $ npm install m2m
 ```js
 const m2m = require('m2m');
 
-let s = new m2m.Server(200);
+let server = new m2m.Server(200);
 
 m2m.connect()
+.catch(console.log)
 .then(console.log)
 .then(() => {
   
-  s.dataSource('random-number', (ws) => {
+  server.dataSource('random-number', (ws) => {
     let rn = Math.floor(Math.random() * 300);
     ws.send({id:ws.id, topic:ws.topic, interval:ws.interval, value:rn});
   })
 
-  s.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
+  server.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
     res.json({id:res.id, path:res.path, query:req.query, params:req.params, body:req.body});
   });
 
 })
-.catch(console.log)
 ```
 
 #### 2. Start server 2 application.
@@ -46,22 +52,23 @@ $ node app.js
 ```js
 const m2m = require('m2m');
 
-let s = new m2m.Server(300);
+let server = new m2m.Server(300);
 
 m2m.connect()
+.catch(console.log)
 .then(console.log)
 .then(() => {
 
-  s.dataSource('random-number', (ws) => {
+  server.dataSource('random-number', (ws) => {
     let rn = Math.floor(Math.random() * 300);
     ws.send({id:ws.id, topic:ws.topic, interval:ws.interval, value:rn});
   })
-  s.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
+
+  server.post('/machine-control/:id/actuator/:number/action/:state', (req, res) => {
     res.json({id:res.id, path:res.path, query:req.query, params:req.params, body:req.body});
   });
 
 })
-.catch(console.log)
 ```
 
 #### 2. Start server 3 application.
@@ -77,40 +84,40 @@ $ node app.js
 ```js
 const m2m = require('m2m');
 
-let s = new m2m.Server(100);
+let server = new m2m.Server(100);
 
 m2m.connect()
+.catch(console.log)
 .then(console.log)
 .then(() => {
 
-  let s = 0
+  let round = 0
+  let data = null
 
-  const client = new s.Client();
+  const client = new server.Client();
 
-  s.publish('server-to-server', async (ws) => {
-    let d = null
-    if(s == 0){
-      s = 1
-      d = await client.post(200, '/machine-control/m120/actuator/25/action/on?name=ed', {id:200, state:'true'})
+  server.publish('server-to-server', async (ws) => {
+    if(round == 0){
+      round = 1
+      data = await client.post(200, '/machine-control/m120/actuator/25/action/on?name=ed', {id:200, state:'true'})
     }
-    else{
-      s = 0
-      d = await client.post(300, '/machine-control/m120/actuator/25/action/on?name=ed', {id:300, state:'true'})
+    else if(round == 1){
+      round = 0
+      data = await client.post(300, '/machine-control/m120/actuator/25/action/on?name=ed', {id:300, state:'true'})
     }
-    ws.send(d)
+    ws.send(data)
   })
 
-  s.dataSource('random-number',async (ws) => {
-    if(s == 0){
-      d = await client.read(200, 'random-number')
+  server.dataSource('random-number',async (ws) => {
+    if(round == 0){
+      data = await client.read(200, 'random-number')
     }
-    else{
-      d = await client.read(300, 'random-number')
+    else if(round == 1){
+      data = await client.read(300, 'random-number')
     }
-    ws.send(d)
+    ws.send(data)
   })
 })
-.catch(console.log)
 ```
 
 #### 2. Start server 3 application.
@@ -130,6 +137,7 @@ const m2m = require('m2m')
 let client = new m2m.Client()
 
 m2m.connect()
+.catch(console.log)
 .then((result) => {
   console.log('connection:', result)
   client.subscribe({id:100, topic:'server-to-server'}, async (data) => { 
@@ -138,7 +146,6 @@ m2m.connect()
     console.log('random-number', result)    
   }) 
 })
-.catch(console.log)
 ```
 #### 3. Start client application.
 ```js
